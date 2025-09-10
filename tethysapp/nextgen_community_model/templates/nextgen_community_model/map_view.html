@@ -1,0 +1,126 @@
+{% extends "tethys_apps/app_no_nav.html" %}
+{% load tethys static %}
+
+{% block styles %}
+    {{ block.super }}
+    <link href="{% static 'nextgen_community_model/css/map_view.css' %}" rel="stylesheet"/>
+    <link href="https://unpkg.com/maplibre-gl@^5.7.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+
+
+{% block app_content %}
+    {{ block.super }}
+    <div id="map" style="width: 100%; height: 100%;"></div>
+{% endblock %}
+
+{% block after_app_content %}
+    {{ block.super }}
+    <!-- Last Run Time Label -->
+    <div id="last-run-time-label" class="hidden"></div>
+
+    <!-- Visualization Mode Toggle -->
+    <div id="visualization-toggle" class="toggle">
+        <input id="last-run" name="visualization-mode" type="radio" />
+        <label for="last-run">Last Run</label>
+
+        <input id="calibration" name="visualization-mode" type="radio" checked="checked" />
+        <label for="calibration">Calibration</label>
+
+        <input id="performance" name="visualization-mode" type="radio" />
+        <label for="performance">Performance</label>
+    </div>
+
+    <!-- Contribute Modal -->
+    <div class="modal fade" id="instructions-modal" tabindex="-1" role="dialog" aria-labelledby="instructions-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content bg-dark text-light">
+            <div class="modal-header bg-dark border-secondary">
+            <h5 class="modal-title text-light" id="instructions-modal-label">Contribute Calibration</h5>
+            <button type="button" class="close text-light" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body bg-dark">
+                <form>
+                    <div class="mb-3">
+                        <label for="name-text" class="form-label text-light">Name</label>
+                        <input type="text" class="form-control bg-secondary text-light border-secondary" id="name-text">
+                    </div>
+                    <div class="mb-3">
+                        <label for="institution-text" class="form-label text-light">Institution</label>
+                        <input type="text" class="form-control bg-secondary text-light border-secondary" id="institution-text">
+                    </div>
+                    <div class="mb-3">
+                        <label for="vpu-select" class="form-label text-light">Select VPU</label>
+                        <select class="form-select bg-secondary text-light border-secondary" id="vpu-select" aria-label="VPU Selection">
+                            <option selected value="01">New England (VPU 01)</option>
+                            <option value="02">Mid-Atlantic (VPU 02)</option>
+                            <option value="03N">South Atlantic-North (VPU 03N)</option>
+                            <option value="03S">South Atlantic-South (VPU 03S)</option>
+                            <option value="03W">South Atlantic-West (VPU 03W)</option>
+                            <option value="04">Great Lakes (VPU 04)</option>
+                            <option value="05">Ohio (VPU 05)</option>
+                            <option value="06">Tennessee (VPU 06)</option>
+                            <option value="07">Upper Mississippi (VPU 07)</option>
+                            <option value="08">Lower Mississippi (VPU 08)</option>
+                            <option value="09">Souris-Red-Rainy (VPU 09)</option>
+                            <option value="10L">Missouri-Lower (VPU 10L)</option>
+                            <option value="10U">Missouri-Upper (VPU 10U)</option>
+                            <option value="11">Arkansas-White-Red (VPU 11)</option>
+                            <option value="12">Texas-Gulf (VPU 12)</option>
+                            <option value="13">Rio Grande (VPU 13)</option>
+                            <option value="14">Upper Colorado (VPU 14)</option>
+                            <option value="15">Lower Colorado (VPU 15)</option>
+                            <option value="16">Great Basin (VPU 16)</option>
+                            <option value="17">Pacific Northwest (VPU 17)</option>
+                            <option value="18">California (VPU 18)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label text-light">Email address</label>
+                        <input type="email" class="form-control bg-secondary text-light border-secondary" id="exampleInputEmail1" aria-describedby="emailHelp">
+                    </div>
+                    <div class="mb-3 ">
+                        <label class="form-label text-light" for="config-upload">NextGen Configuration Files</label>
+                        <input type="file" class="form-control bg-secondary text-light border-secondary" id="config-upload" accept=".zip"/>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-dark border-secondary">
+            <button type="button" class="btn btn-success" data-dismiss="modal">Submit</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block app_actions %}
+    {{ block.super }}
+    <div style="display: flex; flex-direction: row; align-items: center; gap: 15px; padding: 5px; width: 100%; justify-content: center; box-sizing: border-box;">
+        <img src="{% static 'nextgen_community_model/images/aquaveo.svg' %}" 
+            alt="Aquaveo Logo" 
+            style="max-width: 120px; max-height: 35px; width: auto; height: auto; object-fit: contain;" />
+        <img src="{% static 'nextgen_community_model/images/byu.svg' %}" 
+            alt="BYU Logo" 
+            style="max-width: 120px; max-height: 35px; width: auto; height: auto; object-fit: contain;" />
+        <img src="{% static 'nextgen_community_model/images/ciroh.png' %}" 
+            alt="CIROH Logo" 
+            style="max-width: 120px; max-height: 35px; width: auto; height: auto; object-fit: contain;" />
+        <img src="{% static 'nextgen_community_model/images/alabama-water-institute.png' %}" 
+            alt="Alabama Water Institute Logo" 
+            style="max-width: 120px; max-height: 35px; width: auto; height: auto; object-fit: contain;" />
+    </div>
+
+    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#instructions-modal">Contribute</button>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    <script src="https://unpkg.com/maplibre-gl@^5.7.0/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@4.3.0/dist/pmtiles.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="{% static 'nextgen_community_model/js/map_view.js' %}" type="module"></script>
+{% endblock %}

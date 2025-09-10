@@ -1,0 +1,257 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-70.7952728884829, 44.59837129537766]
+            },
+            "properties": {
+                "title": "VPU 01",
+                "description": "New England",
+                "vpuid": "01"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-76.7604173875888, 40.584666177465465]
+            },
+            "properties": {
+                "title": "VPU 02",
+                "description": "Mid-Atlantic",
+                "vpuid": "02"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-79.872937, 34.887958]
+            },
+            "properties": {
+                "title": "VPU 03N",
+                "description": "South Atlantic-North",
+                "vpuid": "03N"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-82.177609, 29.615403]
+            },
+            "properties": {
+                "title": "VPU 03S",
+                "description": "South Atlantic-South",
+                "vpuid": "03S"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-86.526287, 32.317842]
+            },
+            "properties": {
+                "title": "VPU 03W",
+                "description": "South Atlantic-West",
+                "vpuid": "03W"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-84.68023976799792, 43.12264425854087]
+            },
+            "properties": {
+                "title": "VPU 04",
+                "description": "Great Lakes",
+                "vpuid": "04"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-84.024514, 38.769591]
+            },
+            "properties": {
+                "title": "VPU 05",
+                "description": "Ohio",
+                "vpuid": "05"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-83.98456024660493, 35.6695918245027]
+            },
+            "properties": {
+                "title": "VPU 06",
+                "description": "Tennessee",
+                "vpuid": "06"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-92.10979986507976, 43.07870618564965]
+            },
+            "properties": {
+                "title": "VPU 07",
+                "description": "Upper Mississippi",
+                "vpuid": "07"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-91.11267557177754, 33.30827539629837]
+            },
+            "properties": {
+                "title": "VPU 08",
+                "description": "Lower Mississippi",
+                "vpuid": "08"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-97.08374512954585, 48.24233883545446]
+            },
+            "properties": {
+                "title": "VPU 09",
+                "description": "Souris Red Rainy",
+                "vpuid": "09"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-99.24285965897484, 40.528961212675426]
+            },
+            "properties": {
+                "title": "VPU 10L",
+                "description": "Missouri-Lower",
+                "vpuid": "10L"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-105.087694, 45.790484]
+            },
+            "properties": {
+                "title": "VPU 10U",
+                "description": "Missouri-Upper",
+                "vpuid": "10U"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-99.18777513930593, 36.23648551958824]
+            },
+            "properties": {
+                "title": "VPU 11",
+                "description": "Arkansas-White-Red",
+                "vpuid": "11"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-97.6883713053304, 31.217613441479813]
+            },
+            "properties": {
+                "title": "VPU 12",
+                "description": "Texas-Gulf",
+                "vpuid": "12"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-102.6653578789558, 30.331822743465423]
+            },
+            "properties": {
+                "title": "VPU 13",
+                "description": "Rio Grande",
+                "vpuid": "13"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-109.03522274404303, 39.305579135819784]
+            },
+            "properties": {
+                "title": "VPU 14",
+                "description": "Upper Colorado",
+                "vpuid": "14"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-111.856243, 34.420102]
+            },
+            "properties": {
+                "title": "VPU 15",
+                "description": "Lower Colorado",
+                "vpuid": "15"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-115.33105081452565, 40.16272945587224]
+            },
+            "properties": {
+                "title": "VPU 16",
+                "description": "Great Basin",
+                "vpuid": "16"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-118.08577650370567, 45.71513819734719]
+            },
+            "properties": {
+                "title": "VPU 17",
+                "description": "Pacific Northwest",
+                "vpuid": "17"
+            }
+        },
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [-119.79166593486512, 37.06482714789141]
+            },
+            "properties": {
+                "title": "VPU 18",
+                "description": "California",
+                "vpuid": "18"
+            }
+        }
+    ]
+}
