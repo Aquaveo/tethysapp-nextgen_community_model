@@ -60,3 +60,62 @@
 .hidden {
     display: none !important;
 }
+
+.performance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.performance-table td {
+    padding: 12px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    transition: background-color 0.2s ease;
+}
+
+.performance-table tr:nth-child(odd) {
+    background-color: rgba(100, 100, 100, 0.3);
+}
+
+.performance-table tr:nth-child(even) {
+    background-color: rgba(100, 100, 100, 0.1);
+}
+
+.performance-table tr:hover {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.performance-table .metric-label {
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: left;
+    min-width: 200px;
+}
+
+.performance-table .metric-value {
+    color: rgba(255, 255, 255, 0.8);
+    text-align: right;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+}
+
+/* Remove border from last row */
+.performance-table tr:last-child td {
+    border-bottom: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

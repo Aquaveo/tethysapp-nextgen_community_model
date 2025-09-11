@@ -148,9 +148,10 @@ visualizationViews['Last Run'] = {
                 // Create popup content based on feature type
                 let popupContent = `<h6>${e.lngLat}</h6>`;
 
-				//
+				// Get the feature's VPU data
 				let vpuData = self.vpuData[selectedFeature.properties.vpuid];
 				
+				// Clicked on VPU
 				if (featureType === 'vpu')
 				{
 					popupContent = `<h6><b>VPU ${selectedFeature.properties.vpuid}</b></h6>`;
@@ -161,6 +162,7 @@ visualizationViews['Last Run'] = {
 
 				}
 				else
+				// Clicked on Catchment
 				if (featureType === 'catchment')
 				{
 					let catchmentId = selectedFeature.properties.divide_id || 'Unknown';
@@ -354,11 +356,47 @@ visualizationViews['Performance'] = {
 	{
 		// Hide last run time label
 		$('#last-run-time-label').addClass('hidden');
-
+		
+		// Reset catchment styles
 		resetCatchmentToOriginalStyles(map);
+
+		// Color VPUs by R² value and add crosshatch patterns
+		for (const vpuId in this.vpuData)
+		{
+			// Get rSquared value and corresponding color
+			const rSquared = this.vpuData[vpuId].coeffDeterm;
+			const color = d3.interpolateViridis(rSquared);
+			
+			// Set VPU outline color
+			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', color);
+			
+			// Add crosshatch pattern with the same color to VPU fill
+			const patternId = `crosshatch-vpu-${vpuId}`;
+			addColoredCrosshatchPattern(map, patternId, color);
+			
+			let fillLayerId = `vpu-fill-${vpuId}`;
+			if (map.getLayer(fillLayerId))
+			{
+				map.setPaintProperty(fillLayerId, 'fill-opacity', 0.4);
+				map.setPaintProperty(fillLayerId, 'fill-pattern', patternId);
+			}
+		}
+
+		// Set catchment colors to random colors
+		updateCatchmentColorRandom(map, 'Viridis');
+
+		// Move text labels above all other layers
+		if (map.getLayer('vpu-labels'))
+		{
+			map.moveLayer('vpu-labels');
+		}
 	},
 	updateOnClick: function(map)
 	{
+		// Create a reference to this object (the "Performance" view) for use in the click handler
+        const self = this;
+
+		// Update the map click handler
         map.on('click', function(e) {
             // Query all features at click point
             const allFeatures = map.queryRenderedFeatures(e.point);
@@ -369,15 +407,27 @@ visualizationViews['Performance'] = {
                 
                 // Organize features by type
                 const vpuFills = allFeatures.filter(f => f.layer.id.startsWith('vpu-fill-'));
-                const vpuBoundaries = allFeatures.filter(f => f.layer.id.startsWith('vpu-') && f.layer.type === 'line');
-                const otherFeatures = allFeatures.filter(f => 
-                    !f.layer.id.startsWith('vpu-') && f.layer.id !== 'vpu-labels'
-                );
+				const catchmentFeatures = allFeatures.filter(f => f.layer.id.startsWith('catchments'));
                 
                 console.log('VPU fills (clicked inside):', vpuFills);
-                console.log('VPU boundaries:', vpuBoundaries);
-                console.log('Other features:', otherFeatures);
+                console.log('Catchment features:', catchmentFeatures);
                 
+				// Get selected feature type
+				let selectedFeature = null;
+				let featureType = 'unknown';
+
+				if (vpuFills.length > 0)
+				{
+					selectedFeature = vpuFills[0];
+					featureType = 'vpu';
+				} 
+				else
+				if (catchmentFeatures.length > 0)
+				{
+					selectedFeature = catchmentFeatures[0];
+					featureType = 'catchment';
+				}
+
                 // Show info about the top feature
                 const topFeature = allFeatures[0];
                 console.log(`Top layer: ${topFeature.layer.id}`);
@@ -385,32 +435,44 @@ visualizationViews['Performance'] = {
                 
                 // Create popup content based on feature type
                 let popupContent = `<h6>${e.lngLat}</h6>`;
-                
-                if (vpuFills.length > 0)
-				{
-                    const fill = vpuFills[0];
-                    const vpuId = fill.properties.vpuid;
-                    const vpuName = getVPUName(vpuId);
 
-					map.setPaintProperty(`vpu-${vpuId}`, 'line-color', '#eeff00ff');
-					map.moveLayer(`vpu-${vpuId}`);
+				// Get the feature's VPU data
+				let vpuData = self.vpuData[selectedFeature.properties.vpuid];
+				
+				// Clicked on VPU
+				if (featureType === 'vpu')
+				{
+					popupContent = `<h6><b>VPU ${selectedFeature.properties.vpuid}</b></h6>`;
+					popupContent += `<p><strong>${getVPUName(selectedFeature.properties.vpuid)}</strong></p>`;
 
-                    popupContent += `<h3>Inside VPU ${vpuId}</h3>`;
-                    popupContent += `<p><strong>${vpuName}</strong></p>`;
-                    popupContent += `<p><em>Clicked inside polygon area</em></p>`;
-                }
+					popupContent += `
+						<table class="performance-table">
+							<tr><td>Coefficient of Determination</td> <td>${vpuData.coeffDeterm}</td></tr>
+							<tr><td>Root Mean Square Error</td> <td>${vpuData.rootMeanSquareError}</td></tr>
+							<tr><td>Mean Absolute Error</td> <td>${vpuData.meanAbsoluteError}</td></tr>
+							<tr><td>Normalized Nash-Sutcliffe Efficiency</td> <td>${vpuData.normalizedNashSutcliffeEfficiency}</td></tr>
+							<tr><td>Relative Bias</td> <td>${vpuData.relativeBias}</td></tr>
+						</table>
+					`;
+				}
 				else
-				if (vpuBoundaries.length > 0)
+				// Clicked on Catchment
+				if (featureType === 'catchment')
 				{
-                    const boundary = vpuBoundaries[0];
-                    popupContent += `<h3>${boundary.layer.id}</h3>`;
-                    popupContent += `<pre>${JSON.stringify(boundary.properties, null, 2)}</pre>`;
-                }
-				else
-				{
-                    popupContent += `<h3>${topFeature.layer.id}</h3>`;
-                    popupContent += `<pre>${JSON.stringify(topFeature.properties, null, 2)}</pre>`;
-                }
+					let catchmentId = selectedFeature.properties.divide_id || 'Unknown';
+					let catchmentNumber = catchmentId.replace('cat-', '');
+
+					popupContent = `<h6><b>Catchment ${catchmentNumber}</b></h6>`;
+					popupContent += `
+						<table class="performance-table">
+							<tr><td>Coefficient of Determination</td> <td>${vpuData.coeffDeterm}</td></tr>
+							<tr><td>Root Mean Square Error</td> <td>${vpuData.rootMeanSquareError}</td></tr>
+							<tr><td>Mean Absolute Error</td> <td>${vpuData.meanAbsoluteError}</td></tr>
+							<tr><td>Normalized Nash-Sutcliffe Efficiency</td> <td>${vpuData.normalizedNashSutcliffeEfficiency}</td></tr>
+							<tr><td>Relative Bias</td> <td>${vpuData.relativeBias}</td></tr>
+						</table>
+					`;
+				}
                 
                 // Show popup
                 new maplibregl.Popup()
@@ -420,6 +482,46 @@ visualizationViews['Performance'] = {
             }
         });
 	},
+	vpuData: generateVpuPerformanceData(),
+}
+
+/**
+ * Generates realistic performance metrics for a VPU
+ * @param {number} coeffDeterm - Coefficient of determination (R²) value (0-1)
+ * @returns {object} Object containing realistic performance metrics
+ */
+function generatePerformanceMetrics(coeffDeterm)
+{
+	return {
+		coeffDeterm: coeffDeterm,
+		rootMeanSquareError: (Math.random() * 25 + 5).toFixed(1), 					// 5-30 range
+		meanAbsoluteError: (Math.random() * 15 + 2).toFixed(1), 					// 2-17 range
+		normalizedNashSutcliffeEfficiency: (Math.random() * 0.6 + 0.1).toFixed(2), 	// 0.1-0.7 range
+		relativeBias: ((Math.random() - 0.5) * 40).toFixed(1) 						// -20% to +20% range
+	};
+}
+
+/**
+ * Generates VPU performance data for all VPUs with predefined R² values
+ * @returns {object} Object containing performance data for all VPUs
+ */
+function generateVpuPerformanceData()
+{
+	// Predefined R² values for each VPU
+	const rSquaredValues = {
+		'01': 0.85, '02': 0.24, '03N': 0.61, '03S': 0.74, '03W': 0.11,
+		'04': 0.92, '05': 0.45, '06': 0.33, '07': 0.78, '08': 0.56,
+		'09': 0.69, '10L': 0.47, '10U': 0.52, '11': 0.88, '12': 0.75,
+		'13': 0.32, '14': 0.13, '15': 0.29, '16': 0.94, '17': 0.66, '18': 0.81
+	};
+	
+	const vpuData = {};
+	for (const vpuId in rSquaredValues)
+	{
+		vpuData[vpuId] = generatePerformanceMetrics(rSquaredValues[vpuId]);
+	}
+	
+	return vpuData;
 }
 
 /** Helper function to get the name of a VPU given its ID.
@@ -847,6 +949,90 @@ function addCrosshatchPatterns(map, successPattern=true, failPattern=true)
 }
 
 /**
+ * Creates a crosshatch pattern with a custom color and adds it to the map as an image
+ * @param {object} map - The maplibre map object
+ * @param {string} patternId - Unique identifier for this pattern
+ * @param {string} color - Color string (e.g., '#ff0000' or 'rgb(255,0,0)')
+ */
+function addColoredCrosshatchPattern(map, patternId, color)
+{
+	// Skip if pattern already exists
+	if (map.hasImage(patternId))
+	{
+		return;
+	}
+	
+	// Convert color string to RGB values
+	let r, g, b;
+	if (color.startsWith('#'))
+	{
+		// Hex color
+		r = parseInt(color.slice(1, 3), 16);
+		g = parseInt(color.slice(3, 5), 16);
+		b = parseInt(color.slice(5, 7), 16);
+	}
+	else
+	if (color.startsWith('rgb'))
+	{
+		// RGB color - extract numbers
+		const matches = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+		if (matches)
+		{
+			r = parseInt(matches[1]);
+			g = parseInt(matches[2]);
+			b = parseInt(matches[3]);
+		}
+		else
+		{
+			// Default to black if parsing fails
+			r = g = b = 0;
+		}
+	}
+	else
+	{
+		// Default to black for unknown color formats
+		r = g = b = 0;
+	}
+	
+	// Create pattern dimensions
+	const size = 16;
+	const data = new Uint8Array(size * size * 4); // RGBA
+	
+	// Fill with transparent background
+	for (let i = 0; i < data.length; i += 4)
+	{
+		data[i] = 0;     // R
+		data[i + 1] = 0; // G
+		data[i + 2] = 0; // B
+		data[i + 3] = 0; // A (transparent)
+	}
+	
+	// Draw crosshatch pattern
+	for (let x = 0; x < size; x++)
+	{
+		for (let y = 0; y < size; y++)
+		{
+			// Create diagonal lines
+			if (x === y || x === (size - 1 - y))
+			{
+				const index = (y * size + x) * 4;
+				data[index] = r;       // R
+				data[index + 1] = g;   // G
+				data[index + 2] = b;   // B
+				data[index + 3] = 255; // A (opaque)
+			}
+		}
+	}
+	
+	// Add the pattern as an image to the map
+	map.addImage(patternId, {
+		width: size,
+		height: size,
+		data: data
+	});
+}
+
+/**
  * Handle missing style images by recreating them
  * @param {object} map - The maplibre map object
  */
@@ -858,6 +1044,19 @@ function handleStyleImageMissing(map)
 			const successPattern = e.id === 'crosshatch-success';
 			const failPattern = e.id === 'crosshatch-fail';
 			addCrosshatchPatterns(map, successPattern, failPattern);
+		}
+		else
+		if (e.id.startsWith('crosshatch-vpu-'))
+		{
+			// Handle dynamic VPU crosshatch patterns
+			const vpuId = e.id.replace('crosshatch-vpu-', '');
+			const performanceView = visualizationViews['Performance'];
+			if (performanceView && performanceView.vpuData[vpuId])
+			{
+				const rSquared = performanceView.vpuData[vpuId].coeffDeterm;
+				const color = d3.interpolateViridis(rSquared);
+				addColoredCrosshatchPattern(map, e.id, color);
+			}
 		}
 	});
 }
@@ -923,6 +1122,82 @@ function updateCatchmentColorComprehensive(map, successColor = '#00FF00', failur
 
 				map.setPaintProperty(layer.id, 'line-color', colorExpression);
 				map.setPaintProperty(layer.id, 'line-width', widthExpression);
+			}
+		}
+	});
+}
+
+/**
+ * Updates catchment styling with random coloring from a color given map
+ * @param {object} map - The maplibre map object
+ * @param {string} colorMap - The D3 color map name (e.g., 'Viridis', 'Inferno', 'Magma', 'Plasma', etc.)
+ */
+function updateCatchmentColorRandom(map, colorMap = 'Viridis')
+{
+	// Get all layers in the map style
+	const layers = map.getStyle().layers;
+	
+	// Iterate through layers to find catchment layers
+	layers.forEach(layer => {
+		// Catchment layer found
+		if (layer.source === 'hydrofabric' && layer['source-layer'] === 'conus_divides')
+		{		
+			if (layer.type === 'fill')
+			{	
+				// Remove any existing pattern to avoid conflicts
+				map.setPaintProperty(layer.id, 'fill-pattern', undefined);
+				
+				// Create an expression that generates a random color for each feature based on divide_id
+				// This uses the divide_id as a seed for consistent colors per catchment
+				const colorExpression = [
+					'interpolate',
+					['linear'],
+					// Use modulo of divide_id hash to get a value between 0 and 1
+					['%', 
+						['abs', 
+							['to-number', 
+								['slice', ['get', 'divide_id'], 4] // Remove 'cat-' prefix and convert to number
+							]
+						], 
+						1000
+					], // Modulo 1000 to get variety
+					0, d3[`interpolate${colorMap}`](0),
+					250, d3[`interpolate${colorMap}`](0.25),
+					500, d3[`interpolate${colorMap}`](0.5),
+					750, d3[`interpolate${colorMap}`](0.75),
+					999, d3[`interpolate${colorMap}`](1)
+				];
+				
+				// Set fill color and opacity
+				map.setPaintProperty(layer.id, 'fill-color', colorExpression);
+				map.setPaintProperty(layer.id, 'fill-opacity', 0.6);
+				map.setLayoutProperty(layer.id, 'visibility', 'visible');
+			}
+			else
+			if (layer.type === 'line')
+			{
+				// Same expression for line colors
+				const colorExpression = [
+					'interpolate',
+					['linear'],
+					['%', 
+						['abs', 
+							['to-number', 
+								['slice', ['get', 'divide_id'], 4]
+							]
+						], 
+						1000
+					],
+					0, d3[`interpolate${colorMap}`](0),
+					250, d3[`interpolate${colorMap}`](0.25),
+					500, d3[`interpolate${colorMap}`](0.5),
+					750, d3[`interpolate${colorMap}`](0.75),
+					999, d3[`interpolate${colorMap}`](1)
+				];
+				
+				// Set line color and width
+				map.setPaintProperty(layer.id, 'line-color', colorExpression);
+				map.setPaintProperty(layer.id, 'line-width', 1);
 			}
 		}
 	});
