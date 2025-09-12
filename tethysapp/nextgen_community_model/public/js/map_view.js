@@ -1651,68 +1651,6 @@ $(function() {
 			addCrosshatchPatterns(map);
 		}, 100);
 
-        // Add click functionality
-        // map.on('click', function(e) {
-        //     // Query all features at click point
-        //     const allFeatures = map.queryRenderedFeatures(e.point);
-            
-        //     if (allFeatures.length > 0)
-		// 	{
-        //         console.log('All features at click point:', allFeatures);
-                
-        //         // Organize features by type
-        //         const vpuFills = allFeatures.filter(f => f.layer.id.startsWith('vpu-fill-'));
-        //         const vpuBoundaries = allFeatures.filter(f => f.layer.id.startsWith('vpu-') && f.layer.type === 'line');
-        //         const otherFeatures = allFeatures.filter(f => 
-        //             !f.layer.id.startsWith('vpu-') && f.layer.id !== 'vpu-labels'
-        //         );
-                
-        //         console.log('VPU fills (clicked inside):', vpuFills);
-        //         console.log('VPU boundaries:', vpuBoundaries);
-        //         console.log('Other features:', otherFeatures);
-                
-        //         // Show info about the top feature
-        //         const topFeature = allFeatures[0];
-        //         console.log(`Top layer: ${topFeature.layer.id}`);
-        //         console.log('Feature properties:', topFeature.properties);
-                
-        //         // Create popup content based on feature type
-        //         let popupContent = `<h6>${e.lngLat}</h6>`;
-                
-        //         if (vpuFills.length > 0)
-		// 		{
-        //             const fill = vpuFills[0];
-        //             const vpuId = fill.properties.vpuid;
-        //             const vpuName = getVPUName(vpuId);
-
-		// 			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', '#eeff00ff');
-		// 			map.moveLayer(`vpu-${vpuId}`);
-
-        //             popupContent += `<h3>Inside VPU ${vpuId}</h3>`;
-        //             popupContent += `<p><strong>${vpuName}</strong></p>`;
-        //             popupContent += `<p><em>Clicked inside polygon area</em></p>`;
-        //         }
-		// 		else
-		// 		if (vpuBoundaries.length > 0)
-		// 		{
-        //             const boundary = vpuBoundaries[0];
-        //             popupContent += `<h3>${boundary.layer.id}</h3>`;
-        //             popupContent += `<pre>${JSON.stringify(boundary.properties, null, 2)}</pre>`;
-        //         }
-		// 		else
-		// 		{
-        //             popupContent += `<h3>${topFeature.layer.id}</h3>`;
-        //             popupContent += `<pre>${JSON.stringify(topFeature.properties, null, 2)}</pre>`;
-        //         }
-                
-        //         // Show popup
-        //         new maplibregl.Popup()
-        //             .setLngLat(e.lngLat)
-        //             .setHTML(popupContent)
-        //             .addTo(map);
-        //     }
-        // });
-
         // Add hover effects for better UX
         const hoverLayers = ['local-boundary'];
         
