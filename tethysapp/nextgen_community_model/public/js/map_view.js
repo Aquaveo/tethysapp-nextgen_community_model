@@ -188,6 +188,30 @@ visualizationViews['Last Run'] = {
             }
         });
 	},
+	updateLegend: function()
+	{
+		// Empty existing legend items
+		const legendContainer = $('#legend-items');
+		legendContainer.empty();
+		
+		// Add legend items
+		this.legend.forEach(item => {
+			const legendItem = $(`
+				<div class="legend-item" style="display: flex; align-items: center; margin-bottom: 8px;">
+					<div class="legend-color" style="
+						width: 20px; 
+						height: 20px; 
+						background-color: ${item.color}; 
+						margin-right: 10px; 
+						border: 1px solid #ccc;
+						${item.pattern ? `background-image: ${item.pattern};` : ''}
+					"></div>
+					<span class="legend-label" style="font-size: 14px;">${item.label}</span>
+				</div>
+			`);
+			legendContainer.append(legendItem);
+		});
+	},
 	lastRunTime: new Date().setUTCHours(0, 0, 0, 0),
 	vpuData: {
 		'01': {
@@ -275,6 +299,10 @@ visualizationViews['Last Run'] = {
 			missingCatchments: []
 		}
 	},
+	legend: [
+		{ color: '#28a745', label: 'Successful Run' },
+		{ color: '#dc3545', label: 'Failed Run' },
+	],
 };
 
 visualizationViews['Calibration'] = {
@@ -487,6 +515,28 @@ visualizationViews['Calibration'] = {
 		// Fully calibrated
 		return 'Calibrated';
 	},
+	updateLegend: function()
+	{
+		const legendContainer = $('#legend-items');
+		legendContainer.empty();
+		
+		this.legend.forEach(item => {
+			const legendItem = $(`
+				<div class="legend-item" style="display: flex; align-items: center; margin-bottom: 8px;">
+					<div class="legend-color" style="
+						width: 20px; 
+						height: 20px; 
+						background-color: ${item.color}; 
+						margin-right: 10px; 
+						border: 1px solid #ccc;
+						${item.pattern ? `background-image: ${item.pattern};` : ''}
+					"></div>
+					<span class="legend-label" style="font-size: 14px;">${item.label}</span>
+				</div>
+			`);
+			legendContainer.append(legendItem);
+		});
+	},
 	vpuData: {
 		'01': {
 			calibrated: true,
@@ -678,6 +728,11 @@ visualizationViews['Calibration'] = {
 			}
 		}
 	},
+	legend: [
+		{ color: '#1a9850', label: 'Calibrated' },
+		{ color: '#fee08b', label: 'Partially Calibrated' },
+		{ color: '#d73027', label: 'Not Calibrated' },
+	],
 };
 
 visualizationViews['Performance'] = {
@@ -817,7 +872,36 @@ visualizationViews['Performance'] = {
             }
         });
 	},
+	updateLegend: function()
+	{
+		const legendContainer = $('#legend-items');
+		legendContainer.empty();
+		
+		this.legend.forEach(item => {
+			const legendItem = $(`
+				<div class="legend-item" style="display: flex; align-items: center; margin-bottom: 8px;">
+					<div class="legend-color" style="
+						width: 20px; 
+						height: 20px; 
+						background-color: ${item.color}; 
+						margin-right: 10px; 
+						border: 1px solid #ccc;
+						${item.pattern ? `background-image: ${item.pattern};` : ''}
+					"></div>
+					<span class="legend-label" style="font-size: 14px;">${item.label}</span>
+				</div>
+			`);
+			legendContainer.append(legendItem);
+		});
+	},
 	vpuData: generateVpuPerformanceData(),
+	legend: [
+		{ color: '#67001f', label: 'Poor Performance (0.0-0.2)' },
+		{ color: '#d6604d', label: 'Below Average (0.2-0.4)' },
+		{ color: '#f7f7f7', label: 'Average (0.4-0.6)' },
+		{ color: '#4393c3', label: 'Good (0.6-0.8)' },
+		{ color: '#053061', label: 'Excellent (0.8-1.0)' }
+	],
 }
 
 /**
@@ -1574,6 +1658,12 @@ function mapSetVisualizationMode(map, mode)
 		// Apply the new visualization
 		visualizationViews[mode].updateMap(map);
 		visualizationViews[mode].updateOnClick(map);
+		
+		// Update legend for the current mode
+		if (visualizationViews[mode].updateLegend)
+		{
+			visualizationViews[mode].updateLegend();
+		}
 	}
 }
 
