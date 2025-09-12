@@ -59,30 +59,30 @@ visualizationViews['Last Run'] = {
 				if (this.vpuRunSuccessful(this.vpuData[vpuId]))
 				{
 					// Set VPU outline color
-					map.setPaintProperty(layerId, 'line-color', '#00FF00'); // Green for success
+					map.setPaintProperty(layerId, 'line-color', '#d6d6d6ff');
 					
-					// Add crosshatch pattern to VPU
+					// Set VPU fill color
 					let fillLayerId = `vpu-fill-${vpuId}`;
 					if (map.getLayer(fillLayerId))
 					{
-						// Add crosshatch pattern to the corresponding fill layer
+						// Add solid fill to the corresponding fill layer
 						map.setPaintProperty(fillLayerId, 'fill-opacity', 0.5);
-						map.setPaintProperty(fillLayerId, 'fill-pattern', 'crosshatch-success');
+						map.setPaintProperty(fillLayerId, 'fill-color', '#28a745'); // Success green color
 					}
 				}
 				// Run was NOT successful for this VPU
 				else
 				{
 					// Set VPU outline color
-					map.setPaintProperty(layerId, 'line-color', '#FF0000'); // Red for failure
+					map.setPaintProperty(layerId, 'line-color', '#d6d6d6ff');
 					map.moveLayer(layerId);
 					
-					// Add crosshatch pattern to VPU
+					// Set VPU fill color
 					let fillLayerId = `vpu-fill-${vpuId}`;
 					if (map.getLayer(fillLayerId))
 					{
 						map.setPaintProperty(fillLayerId, 'fill-opacity', 0.5);
-						map.setPaintProperty(fillLayerId, 'fill-pattern', 'crosshatch-fail');
+						map.setPaintProperty(fillLayerId, 'fill-color', '#dc3545'); // Failure red color
 					}
 					
 					// Get the catchments that failed in this VPU
@@ -301,20 +301,20 @@ visualizationViews['Calibration'] = {
 		{
 			// Get calibration status and corresponding color
 			const calibrationStatus = this.calibrationStatus(vpuId);
-			const color = calibrationStatusColors[calibrationStatus] || '#ffffff'; // Default to white if unknown
+			const color = calibrationStatusColors[calibrationStatus] || '#d6d6d6ff'; // Default to white if unknown
 			
 			// Set VPU outline color
-			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', color);
+			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', '#d6d6d6ff');
 			
 			// Add crosshatch pattern with the same color to VPU fill
-			const patternId = `crosshatch-vpu-${vpuId}`;
-			addColoredCrosshatchPattern(map, patternId, color);
+			// const patternId = `crosshatch-vpu-${vpuId}`;
+			// addColoredCrosshatchPattern(map, patternId, color);
 			
 			let fillLayerId = `vpu-fill-${vpuId}`;
 			if (map.getLayer(fillLayerId))
 			{
 				map.setPaintProperty(fillLayerId, 'fill-opacity', 0.4);
-				map.setPaintProperty(fillLayerId, 'fill-pattern', patternId);
+				map.setPaintProperty(fillLayerId, 'fill-color', color);
 			}
 
 			// Get uncalibrated catchments for this VPU
@@ -697,17 +697,17 @@ visualizationViews['Performance'] = {
 			const color = d3.interpolateViridis(rSquared);
 			
 			// Set VPU outline color
-			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', color);
+			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', '#d6d6d6ff');
 			
 			// Add crosshatch pattern with the same color to VPU fill
-			const patternId = `crosshatch-vpu-${vpuId}`;
-			addColoredCrosshatchPattern(map, patternId, color);
+			// const patternId = `crosshatch-vpu-${vpuId}`;
+			// addColoredCrosshatchPattern(map, patternId, color);
 			
 			let fillLayerId = `vpu-fill-${vpuId}`;
 			if (map.getLayer(fillLayerId))
 			{
 				map.setPaintProperty(fillLayerId, 'fill-opacity', 0.4);
-				map.setPaintProperty(fillLayerId, 'fill-pattern', patternId);
+				map.setPaintProperty(fillLayerId, 'fill-color', color);
 			}
 		}
 
