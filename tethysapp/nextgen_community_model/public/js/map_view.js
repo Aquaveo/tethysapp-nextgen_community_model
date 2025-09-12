@@ -689,12 +689,15 @@ visualizationViews['Performance'] = {
 		// Reset catchment styles
 		resetCatchmentToOriginalStyles(map);
 
+		// Get color scale
+		const colorScale = getScaleDiverging();
+
 		// Color VPUs by R² value and add crosshatch patterns
 		for (const vpuId in this.vpuData)
 		{
 			// Get rSquared value and corresponding color
 			const rSquared = this.vpuData[vpuId].coeffDeterm;
-			const color = d3.interpolateViridis(rSquared);
+			const color = colorScale(rSquared);
 			
 			// Set VPU outline color
 			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', '#d6d6d6ff');
@@ -712,7 +715,7 @@ visualizationViews['Performance'] = {
 		}
 
 		// Set catchment colors to random colors
-		updateCatchmentColorRandom(map, 'Viridis');
+		updateCatchmentColorRandom(map, colorScale);
 
 		// Move text labels above all other layers
 		if (map.getLayer('vpu-labels'))
@@ -815,6 +818,21 @@ visualizationViews['Performance'] = {
         });
 	},
 	vpuData: generateVpuPerformanceData(),
+}
+
+/**
+ * Returns a diverging scale based on the input value.
+ * @returns {function} D3 diverging scale function
+ * @example
+ * // Create a diverging scale
+ * const divergingScale = getDivergingScale();
+ * // Get color for a value of 0.75
+ * const color = divergingScale(0.75);
+ * console.log(color); // Outputs a color string
+ */
+function getScaleDiverging()
+{
+	return d3.scaleDiverging([0, 0.5, 1], d3.interpolateRdBu);
 }
 
 /**
@@ -1462,9 +1480,9 @@ function updateCatchmentColorComprehensive(map, successColor = '#00FF00', failur
 /**
  * Updates catchment styling with random coloring from a color given map
  * @param {object} map - The maplibre map object
- * @param {string} colorMap - The D3 color map name (e.g., 'Viridis', 'Inferno', 'Magma', 'Plasma', etc.)
+ * @param {function} colorMap - A D3 interpolator function.
  */
-function updateCatchmentColorRandom(map, colorMap = 'Viridis')
+function updateCatchmentColorRandom(map, colorMap = d3.interpolateViridis)
 {
 	// Get all layers in the map style
 	const layers = map.getStyle().layers;
@@ -1493,11 +1511,11 @@ function updateCatchmentColorRandom(map, colorMap = 'Viridis')
 						], 
 						1000
 					], // Modulo 1000 to get variety
-					0, d3[`interpolate${colorMap}`](0),
-					250, d3[`interpolate${colorMap}`](0.25),
-					500, d3[`interpolate${colorMap}`](0.5),
-					750, d3[`interpolate${colorMap}`](0.75),
-					999, d3[`interpolate${colorMap}`](1)
+					0, colorMap(0),
+					250, colorMap(0.25),
+					500, colorMap(0.5),
+					750, colorMap(0.75),
+					999, colorMap(1)
 				];
 				
 				// Set fill color and opacity
@@ -1520,11 +1538,11 @@ function updateCatchmentColorRandom(map, colorMap = 'Viridis')
 						], 
 						1000
 					],
-					0, d3[`interpolate${colorMap}`](0),
-					250, d3[`interpolate${colorMap}`](0.25),
-					500, d3[`interpolate${colorMap}`](0.5),
-					750, d3[`interpolate${colorMap}`](0.75),
-					999, d3[`interpolate${colorMap}`](1)
+					0, colorMap(0),
+					250, colorMap(0.25),
+					500, colorMap(0.5),
+					750, colorMap(0.75),
+					999, colorMap(1)
 				];
 				
 				// Set line color and width
