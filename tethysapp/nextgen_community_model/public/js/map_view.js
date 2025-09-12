@@ -440,7 +440,7 @@ visualizationViews['Calibration'] = {
 					let calibrationStatus = 'Unknown';
 
 					// Get the catchment's calibration status
-					if (vpuData.uncalibratedCatchments && vpuData.uncalibratedCatchments.length > 0)
+					if (vpuData.uncalibratedCatchments)
 					{
 						if (vpuData.uncalibratedCatchments.includes(catchmentId))
 						{
