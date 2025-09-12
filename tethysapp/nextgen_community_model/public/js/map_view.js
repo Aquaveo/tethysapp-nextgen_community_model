@@ -1672,5 +1672,8 @@ $(function() {
                 map.getCanvas().style.cursor = '';
             });
         });
+
+		// Initialize map by setting view to "Last Run"
+		mapSetVisualizationMode(map, 'Last Run');
     });
 });
