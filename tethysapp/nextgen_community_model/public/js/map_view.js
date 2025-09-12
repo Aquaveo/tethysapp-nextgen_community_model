@@ -280,14 +280,62 @@ visualizationViews['Last Run'] = {
 visualizationViews['Calibration'] = {
 	updateMap: function(map)
 	{
+		// Colors for calibration status
+		const calibrationStatusColors = {
+			'Not Calibrated': '#d73027',       // Red
+			'Partially Calibrated': '#fee08b', // Yellow
+			'Calibrated': '#1a9850',           // Green
+		};
+
 		// Hide last run time label
 		$('#last-run-time-label').addClass('hidden');
+		
+		// Reset catchment styles
+		resetCatchmentToOriginalStyles(map);
 
-		resetCatchmentColors(map);
-		// resetCatchmentToOriginalStyles(map);
+		// Keep track of all uncalibrated catchments across VPUs
+		let uncalibratedCatchments = [];
+
+		// Color VPUs by calibration status and add crosshatch patterns
+		for (const vpuId in this.vpuData)
+		{
+			// Get calibration status and corresponding color
+			const calibrationStatus = this.calibrationStatus(vpuId);
+			const color = calibrationStatusColors[calibrationStatus] || '#ffffff'; // Default to white if unknown
+			
+			// Set VPU outline color
+			map.setPaintProperty(`vpu-${vpuId}`, 'line-color', color);
+			
+			// Add crosshatch pattern with the same color to VPU fill
+			const patternId = `crosshatch-vpu-${vpuId}`;
+			addColoredCrosshatchPattern(map, patternId, color);
+			
+			let fillLayerId = `vpu-fill-${vpuId}`;
+			if (map.getLayer(fillLayerId))
+			{
+				map.setPaintProperty(fillLayerId, 'fill-opacity', 0.4);
+				map.setPaintProperty(fillLayerId, 'fill-pattern', patternId);
+			}
+
+			// Get uncalibrated catchments for this VPU
+			uncalibratedCatchments = uncalibratedCatchments.concat(this.vpuData[vpuId].uncalibratedCatchments);
+		}
+
+		// Update catchment colors: Green for calibrated, Red for uncalibrated
+		updateCatchmentColorComprehensive(map, '#1a9850', '#d73027', uncalibratedCatchments);
+
+		// Move text labels above all other layers
+		if (map.getLayer('vpu-labels'))
+		{
+			map.moveLayer('vpu-labels');
+		}
 	},
 	updateOnClick: function(map)
 	{
+		// Create a reference to this object (the "Performance" view) for use in the click handler
+        const self = this;
+
+		// Update the map click handler
         map.on('click', function(e) {
             // Query all features at click point
             const allFeatures = map.queryRenderedFeatures(e.point);
@@ -298,15 +346,27 @@ visualizationViews['Calibration'] = {
                 
                 // Organize features by type
                 const vpuFills = allFeatures.filter(f => f.layer.id.startsWith('vpu-fill-'));
-                const vpuBoundaries = allFeatures.filter(f => f.layer.id.startsWith('vpu-') && f.layer.type === 'line');
-                const otherFeatures = allFeatures.filter(f => 
-                    !f.layer.id.startsWith('vpu-') && f.layer.id !== 'vpu-labels'
-                );
+				const catchmentFeatures = allFeatures.filter(f => f.layer.id.startsWith('catchments'));
                 
                 console.log('VPU fills (clicked inside):', vpuFills);
-                console.log('VPU boundaries:', vpuBoundaries);
-                console.log('Other features:', otherFeatures);
+                console.log('Catchment features:', catchmentFeatures);
                 
+				// Get selected feature type
+				let selectedFeature = null;
+				let featureType = 'unknown';
+
+				if (vpuFills.length > 0)
+				{
+					selectedFeature = vpuFills[0];
+					featureType = 'vpu';
+				} 
+				else
+				if (catchmentFeatures.length > 0)
+				{
+					selectedFeature = catchmentFeatures[0];
+					featureType = 'catchment';
+				}
+
                 // Show info about the top feature
                 const topFeature = allFeatures[0];
                 console.log(`Top layer: ${topFeature.layer.id}`);
@@ -314,40 +374,309 @@ visualizationViews['Calibration'] = {
                 
                 // Create popup content based on feature type
                 let popupContent = `<h6>${e.lngLat}</h6>`;
-                
-                if (vpuFills.length > 0)
-				{
-                    const fill = vpuFills[0];
-                    const vpuId = fill.properties.vpuid;
-                    const vpuName = getVPUName(vpuId);
 
-					map.setPaintProperty(`vpu-${vpuId}`, 'line-color', '#eeff00ff');
-					map.moveLayer(`vpu-${vpuId}`);
+				// Get the feature's VPU data
+				let vpuData = self.vpuData[selectedFeature.properties.vpuid];
+				
+				// Clicked on VPU
+				if (featureType === 'vpu')
+				{
+					// Get popup content
+					popupContent = `<h6><b>VPU ${selectedFeature.properties.vpuid}</b></h6>`;
+					popupContent += `<p><strong>${getVPUName(selectedFeature.properties.vpuid)}</strong></p>`;
 
-                    popupContent += `<h3>Inside VPU ${vpuId}</h3>`;
-                    popupContent += `<p><strong>${vpuName}</strong></p>`;
-                    popupContent += `<p><em>Clicked inside polygon area</em></p>`;
-                }
+					popupContent += `
+						<table class="performance-table">
+							<tr><td>Calibration Status</td> <td>${self.calibrationStatus(selectedFeature.properties.vpuid)}</td></tr>
+							<tr><td>Author(s)</td> <td>${vpuData.author.name || 'Unknown'}</td></tr>
+							<tr><td>Contact Info</td> <td>${vpuData.author.contactInfo || 'Unknown'}</td></tr>
+							<tr><td>Publications</td> <td>${(vpuData.author.publications && vpuData.author.publications.length > 0) ? vpuData.author.publications.join('<br>') : 'None'}</td></tr>
+						</table>
+
+						<button class="download-btn">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+								<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+								<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+							</svg>
+							Download Calibration JSON
+						</button>
+					`;
+				}
 				else
-				if (vpuBoundaries.length > 0)
+				// Clicked on Catchment
+				if (featureType === 'catchment')
 				{
-                    const boundary = vpuBoundaries[0];
-                    popupContent += `<h3>${boundary.layer.id}</h3>`;
-                    popupContent += `<pre>${JSON.stringify(boundary.properties, null, 2)}</pre>`;
-                }
-				else
-				{
-                    popupContent += `<h3>${topFeature.layer.id}</h3>`;
-                    popupContent += `<pre>${JSON.stringify(topFeature.properties, null, 2)}</pre>`;
-                }
+					// Get catchment info
+					let catchmentId = selectedFeature.properties.divide_id || 'Unknown';
+					let catchmentNumber = catchmentId.replace('cat-', '');
+					let calibrationStatus = 'Unknown';
+
+					// Get the catchment's calibration status
+					if (vpuData.uncalibratedCatchments && vpuData.uncalibratedCatchments.length > 0)
+					{
+						if (vpuData.uncalibratedCatchments.includes(catchmentId))
+						{
+							calibrationStatus = 'Not Calibrated';
+						}
+						else
+						{
+							calibrationStatus = 'Calibrated';
+						}
+					}
+					
+					// Catchment is calibrated
+					if (calibrationStatus === 'Calibrated')
+					{
+						// Get popup content
+						popupContent = `<h6><b>Catchment ${catchmentNumber}</b></h6>`;
+						popupContent += `
+							<table class="performance-table">
+								<tr><td>Calibration Status</td> <td>${calibrationStatus}</td></tr>
+								<tr><td>Author(s)</td> <td>${vpuData.author.name || 'Unknown'}</td></tr>
+								<tr><td>Contact Info</td> <td>${vpuData.author.contactInfo || 'Unknown'}</td></tr>
+								<tr><td>Publications</td> <td>${(vpuData.author.publications && vpuData.author.publications.length > 0) ? vpuData.author.publications.join('<br>') : 'None'}</td></tr>
+							</table>
+
+							<button class="download-btn">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+									<path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+									<path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+								</svg>
+								Download Calibration JSON
+							</button>
+						`;
+					}
+					// Catchment is NOT calibrated or status unknown
+					else
+					{
+						// Get popup content
+						popupContent = `<h6><b>Catchment ${catchmentNumber}</b></h6>`;
+						popupContent += `<p><strong>Calibration Status: ${calibrationStatus}</strong></p>`;
+					}
+				}
                 
                 // Show popup
-                new maplibregl.Popup()
+                new maplibregl.Popup({
+                    maxWidth: 'none', // Remove default max-width constraint
+                    className: 'custom-popup' // Add custom class for additional styling
+                })
                     .setLngLat(e.lngLat)
                     .setHTML(popupContent)
                     .addTo(map);
             }
         });
+	},
+	calibrationStatus: function(vpuId)
+	{
+		// Get the VPU data
+		let vpuData = this.vpuData[vpuId];
+		if (!vpuData) return 'Unknown VPU';
+
+		// Check for no calibration
+		if (!vpuData.calibrated)
+		{
+			return 'Not Calibrated';
+		}
+
+		// Check for partial calibration
+		if (vpuData.uncalibratedCatchments && vpuData.uncalibratedCatchments.length > 0)
+		{
+			return 'Partially Calibrated';
+		}
+
+		// Fully calibrated
+		return 'Calibrated';
+	},
+	vpuData: {
+		'01': {
+			calibrated: true,
+			uncalibratedCatchments: ['cat-4634', 'cat-20021', 'cat-20017', 'cat-1187', 'cat-1191', 'cat-1192', 'cat-20018', 'cat-20016', 'cat-1186', 'cat-1123'],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'02': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'03N': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		},
+		'03S': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		}, 
+		'03W': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'04': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'05': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'06': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		},
+		'07': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		},
+		'08': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'09': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'10L': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		},
+		'10U': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		},
+		'11': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'12': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'13': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		},
+		'14': {
+			calibrated: true,
+			uncalibratedCatchments: ['cat-2605535', 'cat-2605542', 'cat-2605562', 'cat-2605558', 'cat-2605601'],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'15': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'16': {
+			calibrated: false,
+			uncalibratedCatchments: [],
+			author: {
+				name: '',
+				contactInfo: '',
+				publications: []
+			}
+		},
+		'17': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		},
+		'18': {
+			calibrated: true,
+			uncalibratedCatchments: [],
+			author: {
+				name: 'John Doe',
+				contactInfo: 'johndoe@fake.com',
+				publications: ['https://doi.org/10.1234/fakepub1', 'https://doi.org/10.1234/fakepub2']
+			}
+		}
 	},
 };
 
@@ -475,7 +804,10 @@ visualizationViews['Performance'] = {
 				}
                 
                 // Show popup
-                new maplibregl.Popup()
+                new maplibregl.Popup({
+                    maxWidth: 'none',
+                    className: 'custom-popup'
+                })
                     .setLngLat(e.lngLat)
                     .setHTML(popupContent)
                     .addTo(map);
