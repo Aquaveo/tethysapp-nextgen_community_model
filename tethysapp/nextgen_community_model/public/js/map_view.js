@@ -111,8 +111,8 @@ visualizationViews['Last Run'] = {
 
 		// Update the map click handler
         map.on('click', function(e) {
-            // Query all features at click point
-            const allFeatures = map.queryRenderedFeatures(e.point);
+			// Query all features at click point
+			const allFeatures = map.queryRenderedFeatures(e.point);
             
             if (allFeatures.length > 0)
 			{
@@ -1535,13 +1535,25 @@ function updateCatchmentColorRandom(map, colorMap = 'Viridis')
 	});
 }
 
+/** Sets the map visualization mode by applying the corresponding view's update functions
+ * @param {object} map - The maplibre map object
+ * @param {string} mode - The visualization mode to set (e.g., 'Last Run', 'Performance', etc.)
+ */
 function mapSetVisualizationMode(map, mode)
 {
 	if (visualizationViews[mode])
 	{
-		// Remove all existing click handlers before adding new ones
+		// Remove all event listeners of type 'click'
+		const oldHandler = map._listeners?.click;
+		if (oldHandler)
+		{
+			delete map._listeners.click;
+		}
+		
+		// Standard removal as backup
 		map.off('click');
 		
+		// Apply the new visualization
 		visualizationViews[mode].updateMap(map);
 		visualizationViews[mode].updateOnClick(map);
 	}
