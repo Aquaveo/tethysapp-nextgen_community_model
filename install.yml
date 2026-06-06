@@ -10,7 +10,10 @@ requirements:
   skip: false
   conda:
     channels:
+      - conda-forge
+      - nodefaults
     packages:
+      - geopandas
 
   pip:
 
