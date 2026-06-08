@@ -94,10 +94,7 @@ function mapSetVisualizationMode(map, mode)
 		visualizationViews[mode].updateOnClick(map);
 		
 		// Update legend for the current mode
-		if (visualizationViews[mode].updateLegend)
-		{
-			visualizationViews[mode].updateLegend();
-		}
+		visualizationViews[mode].updateLegend();
 	}
 }
 
