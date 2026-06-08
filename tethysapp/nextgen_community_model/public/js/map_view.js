@@ -139,7 +139,6 @@ $(function() {
         
         // Add source data loading handler - optimized for performance
         let lastStyleApplication = 0;
-        let pendingStyleUpdate = null;
         
         map.on('sourcedata', function(e) {
             // Only handle the correct source and avoid excessive re-styling
