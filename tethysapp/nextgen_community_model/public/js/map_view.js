@@ -159,7 +159,7 @@ $(function() {
             if (now - lastStyleApplication > 1000)
 			{
                 const currentMode = $('input[name="visualization-mode"]:checked').next('label').text();
-                if (visualizationViews[currentMode] && currentMode === 'Last Run')
+                if (visualizationViews[currentMode])
 				{
                     console.log('Re-applying styles after map idle');
                     visualizationViews[currentMode].updateMap(map);
