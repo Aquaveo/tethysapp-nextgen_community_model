@@ -189,27 +189,20 @@ $(function() {
 			addCrosshatchPatterns(map);
 		}, 100);
 
-        // Add hover effects for better UX
-        const hoverLayers = ['local-boundary'];
-        
-        // Add VPU layers to hover list
-        for(let i = 0; i < 17; i++)
-		{
-            let vpuNumber = `0${i + 1}`;
-            if (i > 9) vpuNumber = `${i + 1}`;
-            hoverLayers.push(`vpu-${vpuNumber}`);
-        }
+		// Set cursor to pointer when hovering over VPUs and Catchments
+		map.on('mousemove', (e) => {
+			const features = map.queryRenderedFeatures(e.point);
+			const overInteractive = features.some(f =>
+				f.layer.id.startsWith('vpu-fill-') ||
+				f.layer.id.startsWith('catchments')
+			);
+			map.getCanvas().style.cursor = overInteractive ? 'pointer' : '';
+		});
 
-        // Change cursor on hover
-        hoverLayers.forEach(layerId => {
-            map.on('mouseenter', layerId, () => {
-                map.getCanvas().style.cursor = 'pointer';
-            });
-            
-            map.on('mouseleave', layerId, () => {
-                map.getCanvas().style.cursor = '';
-            });
-        });
+		// Reset cursor when leaving the map entirely
+		map.getCanvas().addEventListener('mouseleave', () => {
+			map.getCanvas().style.cursor = '';
+		});
 
 		// Initialize map by setting view to "Last Run"
 		mapSetVisualizationMode(map, 'Last Run');
