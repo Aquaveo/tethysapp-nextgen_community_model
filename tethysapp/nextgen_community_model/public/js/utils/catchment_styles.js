@@ -199,6 +199,51 @@ export function updateCatchmentColorComprehensive(map, successColor = '#00FF00',
 
 
 /**
+ * Color every catchment in the specified VPUs with the given color
+ *
+ * Uses the `vpuid` property baked into each catchment feature, so no
+ * client-side lookup is needed. Newly-streamed tiles automatically pick
+ * up the styling.
+ *
+ * @param {object} map - The maplibre map object
+ * @param {Array<string>} vpuIds - VPU IDs (e.g. ['01', '02', '03N', ...])
+ * @param {string} vpuColor - The color to apply to the given VPUs
+ */
+export function updateCatchmentColorByVpu(map, vpuIds, vpuColor)
+{
+	// Do nothing if no VPU IDs are provided
+	if (!vpuIds || vpuIds.length === 0) return;
+
+    // Build a 'match' expression: ['match', ['get', 'vpuid'], '01', '#e41a1c', '02', '#377eb8', ..., '#888888']
+    const colorExpr = ['match', ['get', 'vpuid']];
+    for (let i = 0; i < vpuIds.length; i++)
+	{
+        colorExpr.push(vpuIds[i], vpuColor);
+    }
+    colorExpr.push('#888888');  // default for unknown vpuid
+
+    // Apply to every catchment layer
+    map.getStyle().layers.forEach(layer => {
+        if (layer.source === 'hydrofabric' && layer['source-layer'] === 'conus_divides')
+		{
+            if (layer.type === 'fill')
+			{
+                map.setPaintProperty(layer.id, 'fill-color', colorExpr);
+                map.setPaintProperty(layer.id, 'fill-opacity', 0.5);
+                map.setLayoutProperty(layer.id, 'visibility', 'visible');
+            } 
+			else
+			if (layer.type === 'line')
+			{
+                map.setPaintProperty(layer.id, 'line-color', colorExpr);
+                map.setPaintProperty(layer.id, 'line-width', 1);
+            }
+        }
+    });
+}
+
+
+/**
  * Updates catchment styling with random coloring from a color given map
  * @param {object} map - The maplibre map object
  * @param {function} colorMap - A D3 interpolator function.

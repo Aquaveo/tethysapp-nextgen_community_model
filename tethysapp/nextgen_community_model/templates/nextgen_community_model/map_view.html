@@ -1,5 +1,6 @@
 {% extends "tethys_apps/app_no_nav.html" %}
 {% load tethys static %}
+{% load tethys_gizmos %}
 
 {% block styles %}
     {{ block.super }}
@@ -16,8 +17,10 @@
 
 {% block after_app_content %}
     {{ block.super }}
-    <!-- Last Run Time Label -->
-    <div id="last-run-time-label" class="hidden"></div>
+    <!-- Last Run Time Date Picker -->
+    <div id="last-run-view-date-picker-wrapper">
+        {% gizmo last_run_view_date_picker %}
+    </div>
 
     <!-- Visualization Mode Toggle -->
     <div id="visualization-toggle" class="toggle">
@@ -99,6 +102,9 @@
         </div>
         </div>
     </div>
+
+    <!-- Loading Wheel -->
+    <div id="loading-wheel" class="hidden"></div>
 
 {% endblock %}
 

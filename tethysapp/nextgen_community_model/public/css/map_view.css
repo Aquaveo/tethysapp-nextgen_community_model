@@ -24,6 +24,162 @@
     letter-spacing: 0.5px;
 }
 
+#loading-wheel {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+
+    border: 12px solid #3ebfff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ============================================
+   Date Picker — Wrapper + Input
+   ============================================ */
+
+/* Outer panel — matches the visual style of #legend / #visualization-toggle */
+#last-run-view-date-picker-wrapper {
+    position: absolute;
+    z-index: 1000;
+    top: 70px;
+    right: 20px;
+
+    background: #333;
+    padding: 10px 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    font-family: Arial, sans-serif;
+}
+
+/* Squash Bootstrap's default form-group margin inside the wrapper */
+#last-run-view-date-picker-wrapper .form-group {
+    margin-bottom: 0;
+}
+
+/* The "Date" label above the input */
+#last-run-view-date-picker-wrapper label {
+    display: block;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+/* The input box itself */
+#last-run-view-date-picker-wrapper input[type="text"] {
+    background-color: #444;
+    color: white;
+    border: 1px solid #666;
+    border-radius: 4px;
+    padding: 6px 10px;
+    width: 140px;
+    font-size: 14px;
+    font-weight: normal;
+    letter-spacing: 0;
+    transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+    text-align: center;
+}
+
+#last-run-view-date-picker-wrapper input[type="text"]:hover {
+    background-color: #4a4a4a;
+    border-color: #888;
+}
+
+#last-run-view-date-picker-wrapper input[type="text"]:focus {
+    background-color: #2a2a2a;
+    border-color: #007cba;
+    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
+    outline: none;
+}
+
+#last-run-view-date-picker-wrapper input[type="text"]::placeholder {
+    color: #999;
+}
+
+/* ============================================
+   Date Picker — Popup Calendar
+   ============================================ */
+
+.datepicker.datepicker-dropdown {
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    color: #ddd;
+    padding: 8px;
+}
+
+/* Header row: month/year switch + prev/next arrows */
+.datepicker.datepicker-dropdown .datepicker-switch,
+.datepicker.datepicker-dropdown .prev,
+.datepicker.datepicker-dropdown .next {
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+}
+
+.datepicker.datepicker-dropdown .datepicker-switch:hover,
+.datepicker.datepicker-dropdown .prev:hover,
+.datepicker.datepicker-dropdown .next:hover {
+    background-color: #444;
+}
+
+/* Day-of-week column headers (Su Mo Tu...) */
+.datepicker.datepicker-dropdown .dow {
+    color: #aaa;
+    font-weight: normal;
+}
+
+/* Day cells */
+.datepicker.datepicker-dropdown .day {
+    color: #ddd;
+    border-radius: 4px;
+    transition: background-color 0.12s;
+}
+
+.datepicker.datepicker-dropdown .day:hover {
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+}
+
+/* Days from the previous/next month and disabled days (faded) */
+.datepicker.datepicker-dropdown .day.old,
+.datepicker.datepicker-dropdown .day.new,
+.datepicker.datepicker-dropdown .day.disabled,
+.datepicker.datepicker-dropdown .day.disabled:hover {
+    color: #666;
+}
+
+/* Today's date */
+.datepicker.datepicker-dropdown .day.today,
+.datepicker.datepicker-dropdown .day.today:hover {
+    background-color: #ffc107;
+    color: #000;
+    font-weight: bold;
+}
+
+/* The currently selected date */
+.datepicker.datepicker-dropdown .day.active,
+.datepicker.datepicker-dropdown .day.active:hover {
+    background-color: #007cba;
+    color: white;
+    font-weight: bold;
+}
+
 .toggle {
     background: #333;
     border-radius: 20px;

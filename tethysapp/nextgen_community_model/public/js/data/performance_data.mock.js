@@ -28,10 +28,10 @@ function generateVpuPerformanceData()
 		'13': 0.32, '14': 0.13, '15': 0.29, '16': 0.94, '17': 0.66, '18': 0.81
 	};
 	
-	const vpuData = {};
+	const vpuData = { vpus: {} };
 	for (const vpuId in rSquaredValues)
 	{
-		vpuData[vpuId] = generatePerformanceMetrics(rSquaredValues[vpuId]);
+		vpuData.vpus[vpuId] = generatePerformanceMetrics(rSquaredValues[vpuId]);
 	}
 	
 	return vpuData;

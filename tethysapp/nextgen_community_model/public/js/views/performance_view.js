@@ -52,10 +52,10 @@ export class PerformanceView extends VisualizationView
         const colorScale = this.getScaleDiverging();
 
         // Color VPUs by R² value and add crosshatch patterns
-        for (const vpuId in this.vpuData)
+        for (const vpuId in this.vpuData.vpus)
         {
             // Get rSquared value and corresponding color
-            const rSquared = this.vpuData[vpuId].coeffDeterm;
+            const rSquared = this.vpuData.vpus[vpuId].coeffDeterm;
             const color = colorScale(rSquared);
             
             // Set VPU outline color

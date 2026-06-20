@@ -42,6 +42,8 @@ visualizationViews['Last Run'] = new LastRunView();
 visualizationViews['Calibration'] = new CalibrationView();
 visualizationViews['Performance'] = new PerformanceView();
 
+let visualizationViewCurrent = 'Last Run';
+
 /**
  * Handle missing style images by recreating them
  * @param {object} map - The maplibre map object
@@ -75,26 +77,47 @@ function handleStyleImageMissing(map)
  * @param {object} map - The maplibre map object
  * @param {string} mode - The visualization mode to set (e.g., 'Last Run', 'Performance', etc.)
  */
-function mapSetVisualizationMode(map, mode)
+async function mapSetVisualizationMode(map, mode)
 {
 	if (visualizationViews[mode])
 	{
-		// Remove all event listeners of type 'click'
-		const oldHandler = map._listeners?.click;
-		if (oldHandler)
+		try
 		{
-			delete map._listeners.click;
+			// Show loading wheel
+			$('#loading-wheel').removeClass('hidden');
+
+			// Remove all event listeners of type 'click'
+			const oldHandler = map._listeners?.click;
+			if (oldHandler)
+			{
+				delete map._listeners.click;
+			}
+			
+			// Standard removal as backup
+			map.off('click');
+
+			// Unload the current visualization
+			if (visualizationViews[visualizationViewCurrent])
+			{
+				visualizationViews[visualizationViewCurrent].unload(map);
+			}
+			
+			// Apply the new visualization
+			await visualizationViews[mode].onSelect(map);
+			visualizationViews[mode].updateMap(map);
+			visualizationViews[mode].updateOnClick(map);
+			
+			// Update legend for the current mode
+			visualizationViews[mode].updateLegend();
+
+			// Keep track of the current visualization mode
+			visualizationViewCurrent = mode;
 		}
-		
-		// Standard removal as backup
-		map.off('click');
-		
-		// Apply the new visualization
-		visualizationViews[mode].updateMap(map);
-		visualizationViews[mode].updateOnClick(map);
-		
-		// Update legend for the current mode
-		visualizationViews[mode].updateLegend();
+		finally
+		{
+			// Hide loading wheel
+			$('#loading-wheel').addClass('hidden');
+		}
 	}
 }
 
@@ -103,7 +126,7 @@ $(function() {
 	$('#last-run-time-label').text(`Last Run: ${new Date().toLocaleString()}`);
 
     // Update map when visualization mode changes
-    $('input[name="visualization-mode"]').on('change', function() {
+    $('input[name="visualization-mode"]').on('change', async function() {
         const currentIndex = $('input[name="visualization-mode"]').index(this);
         const selectedLabel = $(this).next('label');
 
@@ -112,7 +135,7 @@ $(function() {
         // Update map based on selected visualization mode
         if (visualizationViews[selectedLabel.text()])
 		{
-            mapSetVisualizationMode(map, selectedLabel.text());
+            await mapSetVisualizationMode(map, selectedLabel.text());
         }
     });
 
@@ -130,7 +153,7 @@ $(function() {
     });
 
     // Wait for the map to load before adding layers
-    map.on('load', function() {
+    map.on('load', async function() {
         // Add handler for missing style images
         handleStyleImageMissing(map);
         
@@ -205,6 +228,22 @@ $(function() {
 		});
 
 		// Initialize map by setting view to "Last Run"
-		mapSetVisualizationMode(map, 'Last Run');
+		await mapSetVisualizationMode(map, 'Last Run');
     });
+
+	// Add event listener for last run view date picker
+	$('#last-run-view-date-picker-wrapper input[type="text"]').on('change', async function() {
+		if (visualizationViewCurrent !== 'Last Run') return;
+
+		try
+		{
+			$('#loading-wheel').removeClass('hidden');
+			await visualizationViews['Last Run'].onSelect(map);
+			visualizationViews['Last Run'].updateMap(map);
+		}
+		finally
+		{
+			$('#loading-wheel').addClass('hidden');
+		}
+	});
 });

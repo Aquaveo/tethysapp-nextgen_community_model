@@ -127,7 +127,7 @@ export class VisualizationView
             console.log('Feature properties:', topFeature.properties);
 
             // Look up this VPU's data and delegate popup construction to the view
-            const vpuData = this.vpuData[selectedFeature.properties.vpuid];
+            const vpuData = this.vpuData.vpus[selectedFeature.properties.vpuid];
 
             const popupContent = (featureType === 'vpu')
                 ? this.buildVpuPopup(selectedFeature, vpuData)
@@ -139,6 +139,20 @@ export class VisualizationView
                 .setHTML(popupContent)
                 .addTo(map);
         });
+    }
+
+    /**
+     * Hook for when this view is selected in the UI. 
+     * 
+     * Default implementation does nothing, but views can override this to trigger one-time 
+     * map updates that don't need to be re-applied on every pan/zoom (e.g. adding a new layer or setting up a unique click handler).
+     * The main `updateMap` method is still called immediately after this, so it's safe to assume the map instance is fully initialized and ready for styling updates.
+     * 
+     * @param {maplibregl.Map} map - The MapLibre map instance.
+     */
+    async onSelect(map)
+    {
+
     }
 
     /**
@@ -232,5 +246,17 @@ export class VisualizationView
     buildCatchmentPopup(feature, vpuData)
     {
         throw new Error("Subclasses of VisualizationView must implement the buildCatchmentPopup method.");
+    }
+
+    /**
+     * Unload the visualization view, cleaning up any resources or event listeners.
+     * 
+     * Child classes should override this method to perform any necessary cleanup.
+     *
+     * @param {maplibregl.Map} map - The MapLibre map instance
+     */
+    unload(map)
+    {
+
     }
 }

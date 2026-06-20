@@ -14,9 +14,10 @@ requirements:
       - nodefaults
     packages:
       - geopandas
+      - djangorestframework
 
   pip:
-
+    - boto3
   npm:
 
 post:

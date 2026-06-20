@@ -60,7 +60,7 @@ export class CalibrationView extends VisualizationView
         let uncalibratedCatchments = [];
 
         // Color VPUs by calibration status and add crosshatch patterns
-        for (const vpuId in this.vpuData)
+        for (const vpuId in this.vpuData.vpus)
         {
             // Get calibration status and corresponding color
             const calibrationStatus = this.calibrationStatus(vpuId);
@@ -81,7 +81,7 @@ export class CalibrationView extends VisualizationView
             }
 
             // Get uncalibrated catchments for this VPU
-            uncalibratedCatchments = uncalibratedCatchments.concat(this.vpuData[vpuId].uncalibratedCatchments);
+            uncalibratedCatchments = uncalibratedCatchments.concat(this.vpuData.vpus[vpuId].uncalibratedCatchments);
         }
 
         // Update catchment colors: Green for calibrated, Red for uncalibrated
@@ -229,7 +229,7 @@ export class CalibrationView extends VisualizationView
 	calibrationStatus(vpuId)
 	{
 		// Get the VPU data
-		let vpuData = this.vpuData[vpuId];
+		let vpuData = this.vpuData.vpus[vpuId];
 		if (!vpuData) return 'Unknown VPU';
 
 		// Check for no calibration
