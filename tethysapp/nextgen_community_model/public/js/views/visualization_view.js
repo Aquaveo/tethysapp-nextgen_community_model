@@ -100,20 +100,20 @@ export class VisualizationView
             console.log('VPU fills (clicked inside):', vpuFills);
             console.log('Catchment features:', catchmentFeatures);
 
-            // Pick the top-priority feature (VPU fill wins over catchment)
+            // Pick the top-priority feature (Catchment wins over VPU)
             let selectedFeature = null;
             let featureType = 'unknown';
 
-            if (vpuFills.length > 0)
-            {
-                selectedFeature = vpuFills[0];
-                featureType = 'vpu';
-            }
-            else
             if (catchmentFeatures.length > 0)
             {
                 selectedFeature = catchmentFeatures[0];
                 featureType = 'catchment';
+            }
+            else
+            if (vpuFills.length > 0)
+            {
+                selectedFeature = vpuFills[0];
+                featureType = 'vpu';
             }
             else
             {
